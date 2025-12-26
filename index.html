@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Wiki Development textui</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&amp;family=Rajdhani:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<style>@keyframes float {
+             0% { transform: translateY(0px); }
+             50% { transform: translateY(-5px); }
+             100% { transform: translateY(0px); }
+         }
+         .animate-float {
+             animation: float 4s ease-in-out infinite;
+         }
+         @keyframes fadeInScale {
+             0% { opacity: 0; transform: scale(0.8); }
+             100% { opacity: 1; transform: scale(1); }
+         }
+         .animate-fadeInScale {
+             animation: fadeInScale 1.2s ease-out forwards;
+         }
+         .bg-scanlines {
+             background: linear-gradient(
+                 to bottom,
+                 rgba(255,255,255,0),
+                 rgba(255,255,255,0) 50%,
+                 rgba(0,0,0,0.1) 50%,
+                 rgba(0,0,0,0.1)
+             );
+             background-size: 100% 4px;
+         }
+      @keyframes fullCircleSequence {
+          0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+          25.8% { transform: translate(-200px, 0) rotate(0deg) scale(1); }
+          25.8%, 48.4% { transform: translate(-200px, 0) rotate(0deg) scale(1); }
+          48.4%, 74.2% { transform: translate(-200px, 0) rotate(360deg) scale(1); }
+          100% { transform: translate(0, 0) rotate(360deg) scale(1); }
+      }
+      .animate-fullCircleSequence {
+          animation: fullCircleSequence 3.1s ease-in-out forwards;
+      }
+      .hidden-element {
+          visibility: hidden;
+          opacity: 0;
+          pointer-events: none;
+      }
+      </style>
+      </head>
+<body class="min-h-screen relative overflow-hidden font-body transition-colors duration-300" id="wikiContainer" style="display: none; background-color: transparent;">
+<div class="relative z-10 flex items-center gap-2 animate-float p-4 fixed" id="wikiPanel" style="left: 50%; top: 50%; transform: translate(-50%, -50%);">
+<div class="group relative flex flex-col items-center justify-center">
+<div class="absolute -top-2 w-5 h-[1px] bg-primary/30 group-hover:bg-primary/80 transition-all duration-300" style="right: 8px;"></div>
+<div class="absolute -top-1 w-3 h-[0.5px] bg-primary/20 group-hover:bg-primary/60 transition-all duration-300" style="right: 8px;"></div>
+<button class="w-10 h-10 backdrop-blur-md border border-primary/40 rounded-lg flex items-center justify-center shadow-neon transition-all duration-300 group-hover:border-primary group-hover:shadow-neon-hover group-active:scale-95" style="background-color: #181818;">
+<span class="text-primary font-display font-bold text-lg" id="eText"></span>
+</button>
+<div class="absolute -bottom-4 w-full h-4 bg-primary/10 blur-md rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+</div>
+<div class="group relative">
+<div class="absolute -top-2 left-0 right-0 mx-auto w-3/4 h-[2px] bg-primary/30 group-hover:bg-primary/80 transition-all duration-300 rounded-full"></div>
+<button class="relative h-10 px-6 border border-primary/40 rounded-lg flex items-center shadow-neon transition-all duration-300 group-hover:border-primary group-hover:shadow-neon-hover group-active:scale-[0.98]">
+<div class="absolute inset-0 rounded-lg" style="background-color: #181818;"></div>
+<span class="text-white font-display font-bold text-sm tracking-wide z-10 drop-shadow-md" id="wikiText"></span>
+</button>
+<div class="absolute -bottom-2 left-0 right-0 mx-auto w-3/4 h-[2px] bg-primary/30 group-hover:bg-primary/80 transition-all duration-300"></div>
+</div>
+<div class="relative group cursor-pointer">
+<div class="w-10 h-10 rounded-full border border-primary/30 flex items-center justify-center transition-all duration-500 group-hover:border-primary/80 group-hover:rotate-180 shadow-[0_0_10px_rgba(0,229,160,0.1)] relative" style="background-color: #181818;">
+<svg class="absolute inset-0 w-full h-full p-1" viewBox="0 0 100 100">
+<circle class="text-primary/60 transform -rotate-90 origin-center" cx="50" cy="50" fill="none" r="46" stroke="currentColor" stroke-dasharray="60 200" stroke-linecap="round" stroke-width="2"></circle>
+</svg>
+</div>
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<div class="w-2 h-2 bg-primary rounded-full shadow-[0_0_8px_rgba(0,229,160,1)] animate-pulse"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+let activeColor = null;
+let currentKey = 'E';
+let currentText = 'wiki development';
+let animationDuration = 3100;
+document.addEventListener('DOMContentLoaded', function() {
+     const container = document.getElementById('wikiContainer');
+     document.addEventListener('keydown', function(event) {
+         if (event.key === 'Escape' && container.style.display !== 'none') {
+             fetch(`https://${GetParentResourceName()}/close`, {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({})
+             });
+         }
+     });
+});
+function updateColorCss(colorHex, colorRgb) {
+     const style = document.documentElement.style;
+     style.setProperty('--primary-color', colorHex);
+     style.setProperty('--primary-rgb', colorRgb);
+     document.querySelectorAll('[class*="bg-primary"]').forEach(el => {
+         el.style.backgroundColor = colorHex;
+     });
+     document.querySelectorAll('[class*="border-primary"]').forEach(el => {
+         el.style.borderColor = colorHex;
+     });
+     document.querySelectorAll('[class*="text-primary"]').forEach(el => {
+         el.style.color = colorHex;
+     });
+     const eText = document.getElementById('eText');
+     if (eText) {
+         eText.style.color = colorHex;
+         eText.style.filter = `drop-shadow(0 0 5px ${colorHex})`;
+     }
+     const pulseCircle = document.querySelector('.animate-pulse');
+     if (pulseCircle) {
+         pulseCircle.style.backgroundColor = colorHex;
+         pulseCircle.style.boxShadow = `0 0 8px ${colorHex}`;
+     }
+     const style_tag = document.createElement('style');
+     style_tag.id = 'dynamic-neon-colors';
+     const oldStyle = document.getElementById('dynamic-neon-colors');
+     if (oldStyle) oldStyle.remove();
+     style_tag.textContent = `
+         .shadow-neon { box-shadow: 0 0 10px ${colorHex}40, inset 0 0 5px ${colorHex}33 !important; }
+         .shadow-neon-hover { box-shadow: 0 0 20px ${colorHex}99, inset 0 0 10px ${colorHex}4d !important; }
+         .shadow-neon-custom { box-shadow: 0 0 10px ${colorHex}40, inset 0 0 5px ${colorHex}33 !important; }
+         .shadow-neon-hover-custom { box-shadow: 0 0 20px ${colorHex}99, inset 0 0 10px ${colorHex}4d !important; }
+         .bg-primary-glow { background-color: ${colorHex}80 !important; }
+         .shadow-\\[0_0_10px_rgba\\(0\\,229\\,160\\,0\\.1\\)\\] { box-shadow: 0 0 10px ${colorHex}1a !important; }
+         .shadow-\\[0_0_8px_rgba\\(0\\,229\\,160\\,1\\)\\] { box-shadow: 0 0 8px ${colorHex} !important; }
+         .text-primary {color: ${colorHex} !important;}
+         .border-primary {border-color: ${colorHex} !important;}
+         .bg-primary {background-color: ${colorHex} !important;}
+     `;
+     document.head.appendChild(style_tag);
+}
+window.addEventListener('message', function(event) {
+     const data = event.data;
+     if (data.action === 'setColor') {
+         activeColor = data.color;
+         updateColorCss(data.color.hex, data.color.rgb);
+     } else if (data.action === 'setAnimationDuration') {
+         animationDuration = data.duration;
+     } else if (data.action === 'open') {
+         document.getElementById('wikiContainer').style.display = 'block';
+     } else if (data.action === 'close') {
+         document.getElementById('wikiContainer').style.display = 'none';
+     } else if (data.action === 'showIndicator') {
+         if (data.key) currentKey = data.key;
+         if (data.text) currentText = data.text;
+         document.getElementById('eText').textContent = currentKey;
+         document.getElementById('wikiText').textContent = currentText;
+         const panel = document.getElementById('wikiPanel');
+         const screenWidth = window.innerWidth;
+         const screenHeight = window.innerHeight;
+         document.getElementById('wikiContainer').style.display = 'block';
+         const closeBtn = panel.children[0];
+         const wikiBtn = panel.children[1];
+         const indicator = panel.children[2];
+         if (closeBtn) closeBtn.style.display = 'none';
+         if (wikiBtn) wikiBtn.style.display = 'none';
+         if (indicator) indicator.style.display = 'block';
+         const pixelX = data.x * screenWidth;
+         const pixelY = data.y * screenHeight;
+         panel.style.left = pixelX + 'px';
+         panel.style.top = pixelY + 'px';
+         panel.style.transform = 'translate(-50%, -50%)';
+     } else if (data.action === 'showFull') {
+         if (data.key) currentKey = data.key;
+         if (data.text) currentText = data.text;
+         document.getElementById('eText').textContent = currentKey;
+         document.getElementById('wikiText').textContent = currentText;
+         const panel = document.getElementById('wikiPanel');
+         const screenWidth = window.innerWidth;
+         const screenHeight = window.innerHeight;
+         document.getElementById('wikiContainer').style.display = 'block';
+         const pixelX = data.x * screenWidth;
+         const pixelY = data.y * screenHeight;
+         panel.style.left = pixelX + 'px';
+         panel.style.top = pixelY + 'px';
+         panel.style.transform = 'translate(-50%, -50%)';
+         const closeBtn = panel.children[0];
+         const wikiBtn = panel.children[1];
+         const indicator = panel.children[2];
+         if (closeBtn) {
+             closeBtn.style.display = 'block';
+             closeBtn.classList.add('animate-fadeInScale');
+         }
+         if (wikiBtn) {
+             wikiBtn.style.display = 'block';
+             wikiBtn.classList.add('animate-fadeInScale');
+         }
+         if (indicator) indicator.style.display = 'block';
+         } else if (data.action === 'triggerAnimation') {
+         const panel = document.getElementById('wikiPanel');
+         const closeBtn = panel.children[0];
+         const wikiBtn = panel.children[1];
+         const indicator = panel.children[2];
+         fetch(`https://${GetParentResourceName()}/animationStarted`, {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json' },
+             body: JSON.stringify({})
+         });
+         if (closeBtn) closeBtn.classList.add('hidden-element');
+         if (wikiBtn) wikiBtn.classList.add('hidden-element');
+         if (indicator) {
+             indicator.classList.remove('animate-fullCircleSequence');
+             void indicator.offsetWidth;
+             indicator.classList.add('animate-fullCircleSequence');
+             setTimeout(function() {
+                 if (closeBtn) {
+                     closeBtn.classList.remove('hidden-element');
+                     closeBtn.classList.add('animate-fadeInScale');
+                 }
+                 if (wikiBtn) {
+                     wikiBtn.classList.remove('hidden-element');
+                     wikiBtn.classList.add('animate-fadeInScale');
+                 }
+                 indicator.classList.remove('animate-fullCircleSequence');
+                 fetch(`https://${GetParentResourceName()}/animationEnded`, {
+                     method: 'POST',
+                     headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify({})
+                 });
+             }, animationDuration + 15);
+         }
+         }
+});
+</script>
