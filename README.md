@@ -1,4 +1,9 @@
 # wiki-textui
+## in-game showroom
+https://youtu.be/mBwvHKCKMhw
+
+![Demo](1.png)
+
 Wiki TextUI DrawText Function
 Usage:
 
@@ -11,9 +16,3 @@ Example:
 ```lua
 exports['wiki-textui']:DrawText('E', 'Press E', vector3(1597.3583, 3234.2361, 40.4798), 'green', false)
 ```
-
-## in-game showroom
-
-![Demo](1.png)
-
-https://youtu.be/mBwvHKCKMhw
