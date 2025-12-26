@@ -12,6 +12,7 @@ Example:
 exports['wiki-textui']:DrawText('E', 'Press E', vector3(1597.3583, 3234.2361, 40.4798), 'green', false)
 ```
 
-## in-game video
+## in-game showroom
+https://i.hizliresim.com/5eo9ee3.png
 
 https://youtu.be/mBwvHKCKMhw
