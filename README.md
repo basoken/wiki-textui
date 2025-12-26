@@ -13,6 +13,7 @@ exports['wiki-textui']:DrawText('E', 'Press E', vector3(1597.3583, 3234.2361, 40
 ```
 
 ## in-game showroom
-https://i.hizliresim.com/5eo9ee3.png
+
+![Demo](1.png)
 
 https://youtu.be/mBwvHKCKMhw
