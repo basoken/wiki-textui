@@ -2,7 +2,7 @@
 ## in-game showroom
 https://youtu.be/mBwvHKCKMhw
 
-![Demo](1.png)
+![Demo](preview.png)
 
 Wiki TextUI DrawText Function
 Usage:

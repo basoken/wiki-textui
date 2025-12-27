@@ -1,6 +1,7 @@
 local Config = nil
 local textUIData = {}
 local animationInProgress = false
+local panelCounter = 0
 
 Citizen.CreateThread(function()
     while not Config do
@@ -38,7 +39,7 @@ Citizen.CreateThread(function()
     })
 end)
 
-function DrawText(key, text, coords, colorName, showMarker)
+function DrawText(key, text, coords, colorName, showMarker, identifier)
     if not key or not text or not coords then
         return
     end
@@ -51,21 +52,32 @@ function DrawText(key, text, coords, colorName, showMarker)
     end
     colorName = colorName or Config.Color
     showMarker = showMarker ~= false
-    for i = #textUIData, 1, -1 do
-        if textUIData[i].coords and #(textUIData[i].coords - coords) < 0.1 then
-            table.remove(textUIData, i)
+    identifier = identifier or (key .. '_' .. text)
+    
+    for i, textData in ipairs(textUIData) do
+        if textData.identifier == identifier then
+            textData.key = key
+            textData.text = text
+            textData.coords = coords
+            textData.keyCode = keyCode
+            textData.colorName = colorName
+            textData.showMarker = showMarker
+            return
         end
     end
+	panelCounter = panelCounter + 1
     table.insert(textUIData, {
-        key = key,
-        text = text,
-        coords = coords,
-        keyCode = keyCode,
-        colorName = colorName,
-        showMarker = showMarker,
-        distance = 10.0,
-        fullUIDistance = 5.0
-    })
+         id = panelCounter,
+         identifier = identifier,
+         key = key,
+         text = text,
+         coords = coords,
+         keyCode = keyCode,
+         colorName = colorName,
+         showMarker = showMarker,
+         distance = 10.0,
+         fullUIDistance = 5.0
+     })
 end
 
 Citizen.CreateThread(function()
@@ -79,32 +91,34 @@ Citizen.CreateThread(function()
         for _, textData in ipairs(textUIData) do
             local dist = #(playerCoords - textData.coords)
             if dist < textData.distance then
-                hasActiveMarker = true
-                local colorName = textData.colorName or Config.Color
-                local colorData = Config.Colors[colorName]
-                if colorData then
-                    local r = colorData.r or 255
-                    local g = colorData.g or 255
-                    local b = colorData.b or 255
-                    if textData.showMarker ~= false then
-                        DrawMarker(27, 
-                            textData.coords.x, 
-                            textData.coords.y, 
-                            textData.coords.z - 0.9,
-                            0, 0, 0, 0, 0, 0, 1.0, 1.0, 1.0,
-                            r, g, b, 180, false, true, 2, false, nil, nil, false
-                        )
-                    end
-                end
                 local onScreen, screenX, screenY = World3dToScreen2d(textData.coords.x, textData.coords.y, textData.coords.z + 1.0)
                 if onScreen then
+                    hasActiveMarker = true
+                    local colorName = textData.colorName or Config.Color
+                    local colorData = Config.Colors[colorName]
+                    if colorData then
+                        local r = colorData.r or 255
+                        local g = colorData.g or 255
+                        local b = colorData.b or 255
+                        if textData.showMarker ~= false then
+                            DrawMarker(27, 
+                                textData.coords.x, 
+                                textData.coords.y, 
+                                textData.coords.z - 0.9,
+                                0, 0, 0, 0, 0, 0, 1.0, 1.0, 1.0,
+                                r, g, b, 180, false, true, 2, false, nil, nil, false
+                            )
+                        end
+                    end
                     SendNUIMessage({
                         action = 'setColor',
+                        panelId = textData.id,
                         color = colorData
                     })
                     if dist < textData.fullUIDistance then
                         SendNUIMessage({
                             action = 'showFull',
+                            panelId = textData.id,
                             x = screenX,
                             y = screenY,
                             text = textData.text,
@@ -113,6 +127,7 @@ Citizen.CreateThread(function()
                     else
                         SendNUIMessage({
                             action = 'showIndicator',
+                            panelId = textData.id,
                             x = screenX,
                             y = screenY,
                             text = textData.text,
@@ -141,9 +156,10 @@ Citizen.CreateThread(function()
                     if dist < 5.0 then
                         local keyCode = textData.keyCode
                         if keyCode and IsControlJustReleased(0, keyCode) then
-                            SendNUIMessage({
-                                action = 'triggerAnimation'
-                            })
+                             SendNUIMessage({
+                                 action = 'triggerAnimation',
+                                 panelId = textData.id
+                             })
                         end
                     end
                 end
@@ -158,6 +174,10 @@ end
 
 function GetAnimationStatus()
     return animationInProgress
+end
+
+function ClearTextUI()
+    textUIData = {}
 end
 
 RegisterNUICallback('close', function(data, cb)
@@ -177,3 +197,4 @@ end)
 exports('DrawText', DrawText)
 exports('GetTextUIData', GetTextUIData)
 exports('GetAnimationStatus', GetAnimationStatus)
+exports('ClearTextUI', ClearTextUI)
