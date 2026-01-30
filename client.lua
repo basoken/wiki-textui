@@ -30,13 +30,6 @@ Citizen.CreateThread(function()
         action = 'setAnimationDuration',
         duration = Config.AnimationDuration
     })
-    SendNUIMessage({
-        action = 'showIndicator',
-        x = 0.5,
-        y = 0.5,
-        text = '',
-        key = ''
-    })
 end)
 
 function DrawText(key, text, coords, colorName, showMarker, identifier)
@@ -53,7 +46,9 @@ function DrawText(key, text, coords, colorName, showMarker, identifier)
     colorName = colorName or Config.Color
     showMarker = showMarker ~= false
     identifier = identifier or (key .. '_' .. text)
-    
+    if type(coords) == 'table' and coords.x then
+        coords = vector3(coords.x, coords.y, coords.z or 0.0)
+    end
     for i, textData in ipairs(textUIData) do
         if textData.identifier == identifier then
             textData.key = key
@@ -89,7 +84,7 @@ Citizen.CreateThread(function()
         local playerCoords = GetEntityCoords(PlayerPedId())
         local hasActiveMarker = false
         for _, textData in ipairs(textUIData) do
-            local dist = #(playerCoords - textData.coords)
+            local dist = #(vector3(playerCoords.x, playerCoords.y, playerCoords.z) - vector3(textData.coords.x, textData.coords.y, textData.coords.z))
             if dist < textData.distance then
                 local onScreen, screenX, screenY = World3dToScreen2d(textData.coords.x, textData.coords.y, textData.coords.z + 1.0)
                 if onScreen then
@@ -125,6 +120,7 @@ Citizen.CreateThread(function()
                             key = textData.key
                         })
                     else
+                        print(json.encode(textData))
                         SendNUIMessage({
                             action = 'showIndicator',
                             panelId = textData.id,
@@ -152,7 +148,7 @@ Citizen.CreateThread(function()
         if not animationInProgress then
             for _, textData in ipairs(textUIData) do
                 if textData.coords then
-                    local dist = #(playerCoords - textData.coords)
+                    local dist = #(vector3(playerCoords.x, playerCoords.y, playerCoords.z) - vector3(textData.coords.x, textData.coords.y, textData.coords.z))
                     if dist < 5.0 then
                         local keyCode = textData.keyCode
                         if keyCode and IsControlJustReleased(0, keyCode) then

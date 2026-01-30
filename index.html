@@ -220,6 +220,14 @@ animationDuration = data.duration;
 document.getElementById('wikiContainer').style.display = 'block';
 } else if (data.action === 'close') {
 document.getElementById('wikiContainer').style.display = 'none';
+Object.keys(panels).forEach(panelId => {
+if (panels[panelId]) {
+panels[panelId].style.display = 'none';
+panels[panelId].remove();
+}
+});
+panels = {};
+panelColors = {};
 } else if (data.action === 'showIndicator') {
 const panelId = data.panelId || 'default';
 const panel = getOrCreatePanel(panelId);
