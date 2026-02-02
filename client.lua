@@ -190,7 +190,31 @@ RegisterNUICallback('animationEnded', function(data, cb)
     cb('ok')
 end)
 
+function Progress(barType, duration, colorName)
+    while not Config or not Config.Colors do
+        Citizen.Wait(10)
+    end
+    barType = string.lower(barType or 'bar')
+    if type(duration) ~= 'number' or duration <= 0 then
+        duration = 3000
+    end
+    colorName = colorName or Config.Color
+    local colorData = Config.Colors[colorName]
+    if colorData then
+        local action = 'startProgress'
+        if barType == 'circle' then
+            action = 'startRingProgress'
+        end
+        SendNUIMessage({
+            action = action,
+            duration = duration,
+            color = colorData
+        })
+    end
+end
+
 exports('DrawText', DrawText)
 exports('GetTextUIData', GetTextUIData)
 exports('GetAnimationStatus', GetAnimationStatus)
 exports('ClearTextUI', ClearTextUI)
+exports('Progress', Progress)

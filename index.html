@@ -65,9 +65,111 @@ pointer-events: auto;
 margin: 0 !important;
 padding: 0 !important;
 }
+@keyframes barGlow {
+from {
+background-color: #1e1e20;
+box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+}
+50% {
+background-color: white;
+box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.4);
+}
+to {
+background-color: white;
+box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+}
+}
+.bar-animate {
+animation: barGlow 1.2s ease-out forwards;
+}
+</style>
+<style>
+.ring-container {
+position: relative;
+width: 100%;
+max-width: 100px;
+background: #121214;
+border-radius: 24px;
+padding: 16px;
+min-height: 90px;
+display: flex;
+align-items: center;
+justify-content: center;
+box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1);
+}
+.ring-wrapper {
+position: absolute;
+width: 80px;
+height: 80px;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+.ring-wrapper svg {
+width: 100%;
+height: 100%;
+}
+.progress-ring-circle {
+stroke-dasharray: 471.2;
+stroke-dashoffset: 471.2;
+stroke: white;
+stroke-width: 8;
+stroke-linecap: round;
+transform: rotate(-90deg);
+transform-origin: 50% 50%;
+transition: stroke-dashoffset 0.35s;
+}
+.percent-text {
+position: absolute;
+font-size: 20px;
+font-weight: 700;
+color: white;
+letter-spacing: -0.02em;
+}
+@keyframes ringGlowDynamic {
+from {
+filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0));
+}
+50% {
+filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.6));
+}
+to {
+filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0));
+}
+}
+.ring-animate {
+animation: ringGlowDynamic 1.2s ease-out forwards;
+}
 </style>
 </head>
-<body class="min-h-screen relative overflow-hidden font-body transition-colors duration-300" id="wikiContainer" style="display: none; background-color: transparent;">
+<body class="min-h-screen relative overflow-hidden font-body transition-colors duration-300">
+<div id="ringProgressContainer" class="w-full h-screen fixed top-0 left-0 flex items-end justify-center p-6 pb-12" style="display: none; background-color: transparent; z-index: 50;">
+<div class="ring-container">
+<div class="ring-wrapper">
+<svg viewBox="0 0 192 192">
+<circle cx="96" cy="96" r75" fill="none" stroke="#2A2A2C" stroke-width="12"/>
+<circle id="ringCircle" class="progress-ring-circle ring-animate" cx="96" cy="96" r="75" fill="none"/>
+</svg>
+<span class="percent-text" id="ringPercent">0%</span>
+</div>
+</div>
+</div>
+<div id="progressContainer" class="w-full h-screen fixed top-0 left-0 flex items-end justify-center p-6 pb-12" style="display: none; background-color: transparent; z-index: 50;">
+<div class="w-full max-w-[650px] bg-[#121214] rounded-[24px] p-0 flex flex-col items-center justify-center shadow-2xl">
+<div class="flex gap-2 w-full max-w-[600px] mb-8 mx-auto mt-8">
+<div class="h-3 flex-1 bg-[#1e1e20] rounded-none bar-animate" style="animation-delay: 0s;"></div>
+<div class="h-3 flex-1 bg-[#1e1e20] rounded-none bar-animate" style="animation-delay: 0.1s;"></div>
+<div class="h-3 flex-1 bg-[#1e1e20] rounded-none bar-animate" style="animation-delay: 0.2s;"></div>
+<div class="h-3 flex-1 bg-[#1e1e20] rounded-none bar-animate" style="animation-delay: 0.3s;"></div>
+<div class="h-3 flex-1 bg-[#1e1e20] rounded-none bar-animate" style="animation-delay: 0.4s;"></div>
+<div class="h-3 flex-1 bg-[#1e1e20] rounded-none bar-animate" style="animation-delay: 0.5s;"></div>
+<div class="h-3 flex-1 bg-[#1e1e20] rounded-none bar-animate" style="animation-delay: 0.6s;"></div>
+<div class="h-3 flex-1 bg-[#1e1e20] rounded-none bar-animate" style="animation-delay: 0.7s;"></div>
+</div>
+<div class="text-white text-lg font-semibold -mt-7" id="progressPercent">%50</div>
+</div>
+</div>
+<div id="wikiContainer" class="min-h-screen relative overflow-hidden font-body transition-colors duration-300" style="display: none; background-color: transparent;">
 <div id="panelsContainer"></div>
 <template id="wikiPanelTemplate">
 <div class="z-10 flex items-center gap-2 fixed" style="height: auto; width: auto; margin: 0; padding: 0;">
@@ -210,7 +312,93 @@ document.head.appendChild(style_tag);
 }
 window.addEventListener('message', function(event) {
 const data = event.data;
-if (data.action === 'setColor') {
+if (data.action === 'startRingProgress') {
+const ringContainer = document.getElementById('ringProgressContainer');
+const ringPercent = document.getElementById('ringPercent');
+const ringCircle = document.getElementById('ringCircle');
+const duration = data.duration || 3000;
+const color = data.color;
+ringContainer.style.display = 'flex';
+ringPercent.textContent = '0%';
+if (color && color.hex) {
+const colorHex = color.hex;
+ringCircle.style.stroke = colorHex;
+ringPercent.style.color = colorHex;
+}
+const circumference = 471.2;
+let startTime = Date.now();
+const interval = setInterval(() => {
+const elapsed = Date.now() - startTime;
+const progress = Math.min((elapsed / duration) * 100, 100);
+const offset = circumference - (progress / 100) * circumference;
+ringCircle.style.strokeDashoffset = offset;
+ringPercent.textContent = Math.floor(progress) + '%';
+if (elapsed >= duration) {
+clearInterval(interval);
+ringPercent.textContent = '100%';
+setTimeout(() => {
+ringContainer.style.display = 'none';
+}, 500);
+}
+}, 50);
+} else if (data.action === 'startProgress') {
+const progressContainer = document.getElementById('progressContainer');
+const progressPercent = document.getElementById('progressPercent');
+const duration = data.duration || 3000;
+const barCount = 8;
+const color = data.color;
+progressContainer.style.display = 'flex';
+progressPercent.textContent = '0s';
+const bars = progressContainer.querySelectorAll('.bar-animate');
+const intervalPerBar = duration / barCount;
+if (color && color.hex) {
+const colorHex = color.hex;
+const colorRgb = color.rgb || '255, 255, 255';
+const styleId = 'dynamic-progress-glow';
+const oldStyle = document.getElementById(styleId);
+if (oldStyle) oldStyle.remove();
+const styleTag = document.createElement('style');
+styleTag.id = styleId;
+styleTag.textContent = `
+@keyframes barGlowDynamic {
+from {
+background-color: #1e1e20;
+box-shadow: 0 0 0 0 rgba(${colorRgb}, 0);
+}
+50% {
+background-color: ${colorHex};
+box-shadow: 0 0 8px 2px rgba(${colorRgb}, 0.4);
+}
+to {
+background-color: ${colorHex};
+box-shadow: 0 0 0 0 rgba(${colorRgb}, 0);
+}
+}
+`;
+document.head.appendChild(styleTag);
+bars.forEach((bar) => {
+bar.style.animation = 'barGlowDynamic 1.2s ease-out forwards';
+});
+progressPercent.style.color = colorHex;
+}
+bars.forEach((bar, index) => {
+bar.style.animationDuration = (duration / 1000) + 's';
+bar.style.animationDelay = (index * intervalPerBar / 1000) + 's';
+});
+let startTime = Date.now();
+const interval = setInterval(() => {
+const elapsed = Date.now() - startTime;
+const progress = Math.floor((elapsed / duration) * 100);
+progressPercent.textContent = progress + '%';
+if (elapsed >= duration) {
+clearInterval(interval);
+progressPercent.textContent = '100%';
+setTimeout(() => {
+progressContainer.style.display = 'none';
+}, 500);
+}
+}, 50);
+} else if (data.action === 'setColor') {
 activeColor = data.color;
 const panelId = data.panelId || 'default';
 updatePanelColor(panelId, data.color.hex, data.color.rgb);
@@ -229,6 +417,7 @@ panels[panelId].remove();
 panels = {};
 panelColors = {};
 } else if (data.action === 'showIndicator') {
+document.getElementById('progressContainer').style.display = 'none';
 const panelId = data.panelId || 'default';
 const panel = getOrCreatePanel(panelId);
 panel.querySelector('.eText').textContent = data.key || '';
@@ -251,6 +440,7 @@ if (!panel.classList.contains('animate-float')) {
 panel.classList.add('animate-float');
 }
 } else if (data.action === 'showFull') {
+document.getElementById('progressContainer').style.display = 'none';
 const panelId = data.panelId || 'default';
 const panel = getOrCreatePanel(panelId);
 panel.querySelector('.eText').textContent = data.key || '';
