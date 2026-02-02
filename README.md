@@ -24,7 +24,7 @@ exports['wiki-textui']:DrawText('E', 'Press E', vector3(1597.3583, 3234.2361, 40
 Usage:
 
 ```lua
-exports['wiki-textui']:Progress(barType, duration, color)
+exports['wiki-textui']:Progress(bartype, duration, color)
 ```
 
 Example:
