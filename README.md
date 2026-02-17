@@ -1,6 +1,6 @@
 # wiki-textui
 ## in-game showroom
-https://youtu.be/bW6a7ZE3kJE
+https://youtu.be/mBwvHKCKMhw
 
 ![Demo](preview.png)
 
@@ -24,7 +24,7 @@ exports['wiki-textui']:DrawText('E', 'Press E', vector3(1597.3583, 3234.2361, 40
 Usage:
 
 ```lua
-exports['wiki-textui']:Progress(bartype, duration, color)
+exports['wiki-textui']:Progress(barType, duration, color)
 ```
 
 Example:

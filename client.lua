@@ -1,36 +1,18 @@
-local Config = nil
 local textUIData = {}
 local animationInProgress = false
 local panelCounter = 0
 
-Citizen.CreateThread(function()
-    while not Config do
-        local configFile = LoadResourceFile(GetCurrentResourceName(), 'config.lua')
-        if configFile then
-            local env = { Config = {} }
-            setmetatable(env, { __index = _G })
-            local success = pcall(function()
-                load(configFile, 'config.lua', 't', env)()
-                Config = env.Config
-            end)
-            if success and Config and Config.Colors and Config.KeyMap then
-                break
-            end
-        end
-        Citizen.Wait(100)
-    end
-    SendNUIMessage({
-        action = 'open'
-    })
-    SendNUIMessage({
-        action = 'setColor',
-        color = Config.Colors[Config.Color]
-    })
-    SendNUIMessage({
-        action = 'setAnimationDuration',
-        duration = Config.AnimationDuration
-    })
-end)
+SendNUIMessage({
+    action = 'open'
+})
+SendNUIMessage({
+    action = 'setColor',
+    color = Config.Colors[Config.Color]
+})
+SendNUIMessage({
+    action = 'setAnimationDuration',
+    duration = Config.AnimationDuration
+})
 
 function DrawText(key, text, coords, colorName, showMarker, identifier)
     if not key or not text or not coords then
@@ -80,12 +62,16 @@ Citizen.CreateThread(function()
         Citizen.Wait(10)
     end
     while true do
-        Citizen.Wait(0)
+        Citizen.Wait(10)
         local playerCoords = GetEntityCoords(PlayerPedId())
         local hasActiveMarker = false
+        local px, py, pz = playerCoords.x, playerCoords.y, playerCoords.z
         for _, textData in ipairs(textUIData) do
-            local dist = #(vector3(playerCoords.x, playerCoords.y, playerCoords.z) - vector3(textData.coords.x, textData.coords.y, textData.coords.z))
-            if dist < textData.distance then
+            local dx = px - textData.coords.x
+            local dy = py - textData.coords.y
+            local dz = pz - textData.coords.z
+            local distSquared = (dx * dx) + (dy * dy) + (dz * dz)
+            if distSquared < (textData.distance * textData.distance) then
                 local onScreen, screenX, screenY = World3dToScreen2d(textData.coords.x, textData.coords.y, textData.coords.z + 1.0)
                 if onScreen then
                     hasActiveMarker = true
@@ -110,7 +96,7 @@ Citizen.CreateThread(function()
                         panelId = textData.id,
                         color = colorData
                     })
-                    if dist < textData.fullUIDistance then
+                    if distSquared < (textData.fullUIDistance * textData.fullUIDistance) then
                         SendNUIMessage({
                             action = 'showFull',
                             panelId = textData.id,
@@ -143,7 +129,7 @@ end)
 
 Citizen.CreateThread(function()
     while true do
-        Citizen.Wait(0)
+        Citizen.Wait(5)
         local playerCoords = GetEntityCoords(PlayerPedId())
         if not animationInProgress then
             for _, textData in ipairs(textUIData) do
