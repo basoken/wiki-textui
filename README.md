@@ -1,6 +1,6 @@
 # wiki-textui
 ## in-game showroom
-https://youtu.be/mBwvHKCKMhw
+https://www.youtube.com/watch?v=bW6a7ZE3kJE
 
 ![Demo](preview.png)
 
