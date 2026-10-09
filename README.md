@@ -3,6 +3,7 @@
 https://youtu.be/mBwvHKCKMhw
 
 ![Demo](preview.png)
+![Demo](image.png)
 
 Wiki TextUI DrawText Function
 Usage:
@@ -48,6 +49,6 @@ Supported types are `info`, `success`, `warning`, and `error`. Duration is in mi
 Example:
 
 ```lua
-exports['wiki-textui']:InfoBox('info', 'CreativeMTA & Script')
+exports['wiki-textui']:InfoBox('info', 'wiki development')
 exports['wiki-textui']:InfoBox('success', 'Status successfully enabled.', 4000)
 ```
