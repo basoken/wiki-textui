@@ -3,7 +3,6 @@
 https://youtu.be/mBwvHKCKMhw
 
 ![Demo](preview.png)
-![Demo](image.png)
 
 Wiki TextUI DrawText Function
 Usage:
@@ -38,17 +37,18 @@ exports['wiki-textui']:Progress('circle', 6000, 'green')
 
 ## Info Box
 
+![Demo](image.png)
+
+
 Usage:
 
 ```lua
 exports['wiki-textui']:InfoBox(type, message, duration)
 ```
 
-Supported types are `info`, `success`, `warning`, and `error`. Duration is in milliseconds and defaults to 5000.
-
 Example:
 
 ```lua
-exports['wiki-textui']:InfoBox('info', 'wiki development')
+exports['wiki-textui']:InfoBox('info', 'wikidevelopment')
 exports['wiki-textui']:InfoBox('success', 'Status successfully enabled.', 4000)
 ```
